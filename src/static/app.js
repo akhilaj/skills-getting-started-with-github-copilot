@@ -12,33 +12,70 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Clear loading message
       activitiesList.innerHTML = "";
-
-      // Populate activities list
-      Object.entries(activities).forEach(([name, details]) => {
-        const activityCard = document.createElement("div");
-        activityCard.className = "activity-card";
-
-        const spotsLeft = details.max_participants - details.participants.length;
-
-        activityCard.innerHTML = `
-          <h4>${name}</h4>
-          <p>${details.description}</p>
-          <p><strong>Schedule:</strong> ${details.schedule}</p>
-          <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
-        `;
-
-        activitiesList.appendChild(activityCard);
-
-        // Add option to select dropdown
+      //Render activities
+      renderActivities(activities);
+      // Populate activity select dropdown
+      activitySelect.innerHTML = "";
+      Object.keys(activities).forEach((name) => {
         const option = document.createElement("option");
         option.value = name;
         option.textContent = name;
         activitySelect.appendChild(option);
       });
+      // Set default selected option
+      if (activitySelect.options.length > 0) {
+        activitySelect.value = activitySelect.options[0].value;
+      }
+      // Add a default option for the select dropdown
+      const defaultOption = document.createElement("option");
+      defaultOption.value = "";
+      defaultOption.textContent = "Select an activity";
+      defaultOption.disabled = true;
+      defaultOption.selected = true;
+      activitySelect.insertBefore(defaultOption, activitySelect.firstChild);
+      // Hide message initially
+      messageDiv.classList.add("hidden"); 
     } catch (error) {
       activitiesList.innerHTML = "<p>Failed to load activities. Please try again later.</p>";
       console.error("Error fetching activities:", error);
     }
+  }
+
+  // Function to render activities
+  function renderActivities(activities) {
+    const activitiesList = document.getElementById("activities-list");
+    activitiesList.innerHTML = "";
+
+    Object.entries(activities).forEach(([name, activity]) => {
+      const card = document.createElement("div");
+      card.className = "activity-card";
+
+      card.innerHTML = `
+        <h4>${name}</h4>
+        <p><strong>Description:</strong> ${activity.description}</p>
+        <p><strong>Schedule:</strong> ${activity.schedule}</p>
+        <p><strong>Max Participants:</strong> ${activity.max_participants}</p>
+        <div class="participants-section">
+          <strong>Participants:</strong>
+          ${
+            activity.participants && activity.participants.length > 0
+              ? `<ul class="participants-list">
+                  ${activity.participants
+                    .map(
+                      (email) =>
+                        `<li><span class="participant-avatar">${email
+                          .charAt(0)
+                          .toUpperCase()}</span> ${email}</li>`
+                    )
+                    .join("")}
+                </ul>`
+              : `<span class="no-participants">No participants yet.</span>`
+          }
+        </div>
+      `;
+
+      activitiesList.appendChild(card);
+    });
   }
 
   // Handle form submission
